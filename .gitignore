@@ -9,4 +9,4 @@ test-out/
 fixtures/
 .env
 *.log
-uzenet
+uzenet*
