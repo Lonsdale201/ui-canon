@@ -149,7 +149,10 @@ export function inferVariants(cluster: PatternCluster): VariantSuggestion[] {
     else if (diffs.some(d => d.includes('added utilities'))) name = 'extended';
     else if (diffs.some(d => d.includes('removed utilities'))) name = 'minimal';
 
-    suggestions.push({ name, diffs });
+    // Classify intent: intentional variant vs likely drift
+    const { intent, reason } = classifyVariantIntent(diffs, count, cluster.members.length);
+
+    suggestions.push({ name, diffs, intent, reason });
   }
 
   return suggestions;
@@ -302,4 +305,73 @@ function pascalCase(str: string): string {
     .split(/[-_\s]+/)
     .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
     .join('');
+}
+
+/**
+ * Classify whether a variant is an intentional design choice or likely source drift.
+ *
+ * Heuristics:
+ * - Only 1-2 utility diffs + no structural change → likely drift
+ * - Interactive element count or structural depth changes → intentional
+ * - Variant appears in only 1 screen out of many → more suspicious (drift)
+ * - Large number of diffs → intentional (different purpose)
+ */
+function classifyVariantIntent(
+  diffs: string[],
+  variantCount: number,
+  totalMembers: number,
+): { intent: 'intentional' | 'likely-drift' | 'unknown'; reason: string } {
+  const hasStructuralChange = diffs.some(d =>
+    d.includes('child count') || d.includes('interactive elements')
+  );
+  const hasTextSlotChange = diffs.some(d => d.includes('text slots'));
+  const utilityOnlyDiffs = diffs.filter(d =>
+    d.includes('added utilities') || d.includes('removed utilities')
+  );
+  const totalDiffCount = diffs.length;
+
+  // Large structural differences → intentional variant
+  if (hasStructuralChange && totalDiffCount >= 2) {
+    return {
+      intent: 'intentional',
+      reason: 'structural differences (child count or interactive elements changed)',
+    };
+  }
+
+  // Many diffs → likely intentional (different purpose)
+  if (totalDiffCount >= 4) {
+    return {
+      intent: 'intentional',
+      reason: `significant differences (${totalDiffCount} changes)`,
+    };
+  }
+
+  // Only 1-2 utility diffs, no structural change → likely drift
+  if (utilityOnlyDiffs.length <= 2 && !hasStructuralChange && !hasTextSlotChange) {
+    return {
+      intent: 'likely-drift',
+      reason: 'minor utility differences only, no structural change',
+    };
+  }
+
+  // Single occurrence in a large cluster → suspicious
+  if (variantCount === 1 && totalMembers >= 4) {
+    return {
+      intent: 'likely-drift',
+      reason: `appears only once among ${totalMembers} members`,
+    };
+  }
+
+  // Only text slot changes → could be either
+  if (hasTextSlotChange && !hasStructuralChange && utilityOnlyDiffs.length === 0) {
+    return {
+      intent: 'unknown',
+      reason: 'only text slot count differs — may be content variation',
+    };
+  }
+
+  return {
+    intent: 'unknown',
+    reason: 'insufficient signal to classify',
+  };
 }

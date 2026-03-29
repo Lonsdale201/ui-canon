@@ -136,6 +136,8 @@ export interface SlotSuggestion {
 export interface VariantSuggestion {
   name: string;
   diffs: string[];
+  intent: 'intentional' | 'likely-drift' | 'unknown';
+  reason: string;
 }
 
 export interface CanonicalSuggestion {
@@ -154,7 +156,7 @@ export interface CanonicalSuggestion {
 export interface CanonicalComponentOutput {
   representativeHtml: string;
   slots: string[];
-  variants: { name: string; diff: string[] }[];
+  variants: { name: string; diff: string[]; intent: string; reason: string }[];
   foundIn: string[];
   confidence: number;
 }
@@ -179,6 +181,14 @@ export interface NormalizedScreenOutput {
   structure: string[];  // compact outline: e.g. ["SideNav", "TopBar", "section > FormGroup3", "section > DataTable"]
 }
 
+export interface CssConflictOutput {
+  selector: string;
+  property: string;
+  values: string[];
+  resolved: string;
+  reason: string;
+}
+
 export interface DesignTokensOutput {
   colors: Record<string, string>;
   fontFamily: Record<string, string[]>;
@@ -186,6 +196,8 @@ export interface DesignTokensOutput {
   customCss: string[];
   fontImports: string[];
   iconSystem: string | null;
+  aliases: Record<string, string>;
+  cssConflicts: CssConflictOutput[];
 }
 
 export interface LayoutRegionOutput {

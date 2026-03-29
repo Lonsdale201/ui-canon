@@ -35,7 +35,7 @@ export function buildCanonicalOutput(
     canonicalComponents[suggestion.componentName] = {
       representativeHtml: suggestion.representativeHtml,
       slots: suggestion.slots.map(s => s.name),
-      variants: suggestion.variants.map(v => ({ name: v.name, diff: v.diffs })),
+      variants: suggestion.variants.map(v => ({ name: v.name, diff: v.diffs, intent: v.intent, reason: v.reason })),
       foundIn: suggestion.foundIn,
       confidence: suggestion.confidence,
     };
