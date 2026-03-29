@@ -111,6 +111,8 @@ The `.mcp.json` in the project root auto-registers the server in Claude Code. Fo
 
 ### Connecting Stitch MCP (optional)
 
+> **Important:** The Stitch MCP is a remote HTTP server and must be added at **user level** (`-s user`). Adding it to a project-level `.mcp.json` will fail with a schema validation error in Claude Code.
+
 ```bash
 claude mcp add stitch --transport http https://stitch.googleapis.com/mcp --header "X-Goog-Api-Key: YOUR-API-KEY" -s user
 ```
@@ -237,6 +239,8 @@ Lásd `canonicalizer.config.json` — minden opcionális, van default:
 MCP szerverként is futtatható — az AI közvetlenül küldhet HTML-t elemzésre. Stitch MCP-vel kombinálva: az AI lekéri a screen-eket a Stitch-ből, elemzi, és azonnal használja az eredményt.
 
 ### Stitch MCP bekötése
+
+> **Fontos:** A Stitch MCP remote HTTP szerver, ezért **user szinten** (`-s user`) kell hozzáadni. Projekt szintű `.mcp.json`-ből nem működik – Claude Code sémavalidációs hibát dob.
 
 ```bash
 claude mcp add stitch --transport http https://stitch.googleapis.com/mcp --header "X-Goog-Api-Key: YOUR-API-KEY" -s user
