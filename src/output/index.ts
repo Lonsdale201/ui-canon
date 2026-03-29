@@ -3,24 +3,29 @@ import path from 'node:path';
 import type {
   PatternCluster, CanonicalSuggestion, DriftIssue,
   CanonicalOutput, DesignTokensOutput, ReportDocument, AnalysisSummary, ParseResult,
+  LayoutRegionOutput,
 } from '../types/index.js';
+import type { ScreenLayout, LayoutDriftIssue, LayoutRegion } from '../extract/layout.js';
 
 const AI_GUIDANCE = `This file describes a UI design system extracted from multiple screens.
 
 HOW TO USE THIS FILE:
 1. "designTokens" contains the exact colors, fonts, border-radii, and custom CSS. Use these values — do not invent new ones.
 2. "canonicalComponents" lists each reusable UI component with its canonical HTML. When building new screens, use these components as-is. Text placeholders (__ACTION_TEXT__, __TEXT__) should be replaced with real content.
-3. "screenMap" shows which components each original screen used, so you can see the intended layout structure.
-4. "variants" on a component describe known variations. Pick the closest variant or use the default representative.
-5. Classes use Tailwind CSS with custom colors from designTokens.colors (e.g. "bg-primary" maps to the "primary" color token).
+3. "layout" describes each screen's spatial structure (sidebar, header, content regions) with widths and positions. "layout.drift" flags inconsistencies across screens (e.g. sidebar width 30% in one screen but 25% in another).
+4. "screenMap" shows which components each original screen used.
+5. "variants" on a component describe known variations. Pick the closest variant or use the default representative.
+6. Classes use Tailwind CSS with custom colors from designTokens.colors (e.g. "bg-primary" maps to the "primary" color token).
 
-IMPORTANT: Maintain visual consistency across all screens. Do not mix styles from different components.`;
+IMPORTANT: Maintain visual consistency across all screens. Do not mix styles from different components. Respect the layout structure — sidebar width, header position, content arrangement must be consistent.`;
 
 export function buildCanonicalOutput(
   clusters: PatternCluster[],
   suggestions: CanonicalSuggestion[],
   parseResults: ParseResult[],
   designTokens: DesignTokensOutput,
+  screenLayouts: ScreenLayout[] = [],
+  layoutDriftIssues: LayoutDriftIssue[] = [],
 ): CanonicalOutput {
   const canonicalComponents: CanonicalOutput['canonicalComponents'] = {};
 
@@ -55,6 +60,14 @@ export function buildCanonicalOutput(
     };
   }
 
+  // Build layout section
+  const layoutScreens: CanonicalOutput['layout']['screens'] = {};
+  for (const sl of screenLayouts) {
+    layoutScreens[sl.fileName] = {
+      regions: sl.regions.map(regionToOutput),
+    };
+  }
+
   return {
     aiGuidance: AI_GUIDANCE,
     meta: {
@@ -63,8 +76,28 @@ export function buildCanonicalOutput(
       totalComponents: suggestions.length,
     },
     designTokens,
+    layout: {
+      screens: layoutScreens,
+      drift: layoutDriftIssues.map(d => ({
+        region: d.region,
+        property: d.property,
+        screens: d.screens,
+        description: d.description,
+      })),
+    },
     canonicalComponents,
     screenMap,
+  };
+}
+
+function regionToOutput(r: LayoutRegion): LayoutRegionOutput {
+  return {
+    role: r.role,
+    comment: r.comment,
+    tag: r.tag,
+    width: r.width,
+    position: r.position,
+    children: r.children.map(regionToOutput),
   };
 }
 

@@ -7,6 +7,7 @@ import { clusterPatterns } from '../cluster/index.js';
 import { detectDrift } from '../drift/index.js';
 import { suggestCanonicalComponents } from '../suggest/index.js';
 import { extractDesignTokens } from '../extract/design-tokens.js';
+import { extractScreenLayouts, detectLayoutDrift } from '../extract/layout.js';
 import { buildCanonicalOutput, buildReport, writeAllOutputs } from '../output/index.js';
 import { countNodes } from '../utils/html.js';
 import { resetIdCounter } from '../utils/ids.js';
@@ -72,6 +73,24 @@ export async function runPipeline(
   timing['normalize'] = Date.now() - t;
   log(`[normalize] Done`);
 
+  // Step 3b: Extract layout structure (from original parse, not normalized — preserves comments)
+  t = Date.now();
+  const layoutTrees = parseResults
+    .filter(r => r.success && r.root)
+    .map(r => ({
+      root: r.root!,
+      source: {
+        fileName: r.source.fileName,
+        relativePath: r.source.relativePath,
+        extension: r.source.extension,
+        screenId: r.source.screenId,
+      } as SourceMeta,
+    }));
+  const screenLayouts = extractScreenLayouts(layoutTrees);
+  const layoutDriftIssues = detectLayoutDrift(screenLayouts);
+  timing['layout'] = Date.now() - t;
+  log(`[layout] Extracted ${screenLayouts.length} screen layouts, ${layoutDriftIssues.length} layout drift issues`);
+
   // Step 4: Extract candidates
   t = Date.now();
   const trees = normalizedResults
@@ -113,7 +132,7 @@ export async function runPipeline(
   const designTokens = extractDesignTokens(rawContents);
   log(`[tokens] Extracted ${Object.keys(designTokens.colors).length} colors, ${Object.keys(designTokens.fontFamily).length} font families`);
 
-  const canonicalOutput = buildCanonicalOutput(clusters, suggestions, normalizedResults, designTokens);
+  const canonicalOutput = buildCanonicalOutput(clusters, suggestions, normalizedResults, designTokens, screenLayouts, layoutDriftIssues);
 
   // Attach extra files if configured
   if (config.attachFiles.length > 0) {

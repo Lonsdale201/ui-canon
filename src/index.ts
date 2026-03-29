@@ -5,6 +5,7 @@ export { normalizeTree, normalizeClasses, normalizeAttributes, abstractText } fr
 export { buildFingerprint, buildStructuralHash, buildClassSignature, serializeFingerprint } from './fingerprint/index.js';
 export { extractCandidates } from './extract/index.js';
 export { extractDesignTokens } from './extract/design-tokens.js';
+export { extractScreenLayouts, detectLayoutDrift } from './extract/layout.js';
 export { compareNodes, compareFingerprints } from './match/index.js';
 export { clusterPatterns, selectRepresentative } from './cluster/index.js';
 export { detectDrift } from './drift/index.js';

@@ -93,9 +93,29 @@ function domNodeToUINode(node: any, source: SourceMeta): UINode {
     }
   }
 
-  const children: UINode[] = (node.children || [])
-    .filter((c: any) => c.type === 'tag' || (c.type === 'text' && c.data?.trim()))
-    .map((c: any) => domNodeToUINode(c, source));
+  // Process children, preserving comments as meta on the next sibling element
+  const rawChildren = node.children || [];
+  const children: UINode[] = [];
+  let pendingComment: string | null = null;
+
+  for (const c of rawChildren) {
+    if (c.type === 'comment') {
+      const text = (c.data || '').trim();
+      if (text) pendingComment = text;
+      continue;
+    }
+    if (c.type === 'tag') {
+      const child = domNodeToUINode(c, source);
+      if (pendingComment) {
+        child.meta.comment = pendingComment;
+        pendingComment = null;
+      }
+      children.push(child);
+    } else if (c.type === 'text' && c.data?.trim()) {
+      children.push(domNodeToUINode(c, source));
+      pendingComment = null;
+    }
+  }
 
   // Check if this looks like a component (PascalCase tag)
   const isComponentLike = /^[A-Z]/.test(node.name || '');

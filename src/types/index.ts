@@ -173,6 +173,26 @@ export interface DesignTokensOutput {
   iconSystem: string | null;
 }
 
+export interface LayoutRegionOutput {
+  role: string;
+  comment: string | null;
+  tag: string;
+  width: string | null;
+  position: string | null;
+  children: LayoutRegionOutput[];
+}
+
+export interface ScreenLayoutOutput {
+  regions: LayoutRegionOutput[];
+}
+
+export interface LayoutDriftOutput {
+  region: string;
+  property: string;
+  screens: { screen: string; value: string }[];
+  description: string;
+}
+
 export interface CanonicalOutput {
   aiGuidance: string;
   meta: {
@@ -181,6 +201,10 @@ export interface CanonicalOutput {
     totalComponents: number;
   };
   designTokens: DesignTokensOutput;
+  layout: {
+    screens: Record<string, ScreenLayoutOutput>;
+    drift: LayoutDriftOutput[];
+  };
   canonicalComponents: Record<string, CanonicalComponentOutput>;
   screenMap: Record<string, NormalizedScreenOutput>;
   attachedFiles?: Record<string, string>;
