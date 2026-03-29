@@ -1,0 +1,41 @@
+{
+  "name": "ui-canon",
+  "version": "0.1.0",
+  "description": "Headless UI canonicalizer and drift detector for Tailwind-based HTML/JSX",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ui-canonicalizer": "dist/cli/index.js",
+    "ui-canonicalizer-mcp": "dist/mcp/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "analyze": "node dist/cli/index.js analyze",
+    "mcp": "node dist/mcp/index.js"
+  },
+  "keywords": [
+    "ui",
+    "canonicalizer",
+    "tailwind",
+    "drift-detection",
+    "design-system"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "commander": "^14.0.3",
+    "fast-glob": "^3.3.3",
+    "htmlparser2": "^12.0.0",
+    "zod": "^4.3.6"
+  }
+}

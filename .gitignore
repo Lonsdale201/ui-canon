@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+demo-out/
+test-out/
+*.tsbuildinfo
+.mcp.json
+.claude/
+fixtures/
+.env
+*.log

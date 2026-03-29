@@ -1,0 +1,22 @@
+{
+  "inputGlobs": ["**/*.html", "**/*.jsx", "**/*.tsx"],
+  "exclude": ["node_modules/**", "dist/**", ".next/**"],
+  "excludeFiles": [],
+  "attachFiles": ["DESIGN.md", "*.md"],
+  "candidate": {
+    "minDepth": 2,
+    "minNodeCount": 5,
+    "rootTagHints": ["header", "nav", "table", "form", "dialog", "section", "aside", "main", "footer"]
+  },
+  "similarity": {
+    "exactMatchThreshold": 1.0,
+    "nearMatchThreshold": 0.75,
+    "driftThreshold": 0.5,
+    "structureWeight": 0.4,
+    "classWeight": 0.3,
+    "childShapeWeight": 0.2,
+    "roleHeuristicWeight": 0.1
+  },
+  "maxFileSizeBytes": 1000000,
+  "verbose": false
+}

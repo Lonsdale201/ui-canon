@@ -1,0 +1,13 @@
+export * from './types/index.js';
+export { collectSourceFiles, readSourceFile, collectAttachedFiles } from './ingest/index.js';
+export { parseSourceFile, parseHtml } from './parse/index.js';
+export { normalizeTree, normalizeClasses, normalizeAttributes, abstractText } from './normalize/index.js';
+export { buildFingerprint, buildStructuralHash, buildClassSignature, serializeFingerprint } from './fingerprint/index.js';
+export { extractCandidates } from './extract/index.js';
+export { extractDesignTokens } from './extract/design-tokens.js';
+export { compareNodes, compareFingerprints } from './match/index.js';
+export { clusterPatterns, selectRepresentative } from './cluster/index.js';
+export { detectDrift } from './drift/index.js';
+export { suggestCanonicalComponents, inferVariants, identifySlots } from './suggest/index.js';
+export { buildCanonicalOutput, buildReport, writeAllOutputs } from './output/index.js';
+export { runPipeline } from './pipeline/index.js';
