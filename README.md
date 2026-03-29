@@ -90,23 +90,43 @@ See `canonicalizer.config.json` — all optional, sensible defaults provided:
 | `maxFileSizeBytes`              | `1000000`                               | Max file size (1MB)                    |
 | `verbose`                       | `false`                                 | Detailed logging                       |
 
-## MCP Server (optional)
+## IDE Integration
 
-The canonicalizer can also run as an MCP server — AI agents (e.g. Claude) can send HTML content for analysis directly, without saving files to disk. Useful with Stitch MCP: the AI fetches screens from Stitch and analyzes them in one flow.
+### Any IDE / terminal (CLI mode)
 
-### Setup
+Works everywhere — just run in any terminal:
 
-The `.mcp.json` in the project root auto-registers the server in Claude Code. For other setups:
+```bash
+node dist/cli/index.js analyze ./html-dir --out ./out
+```
+
+### VS Code (MCP mode)
+
+Open Command Palette (`Ctrl+Shift+P`) → **"MCP: Add Server"** → select **"Command (stdio)"** → enter:
+
+- **Name:** `ui-canonicalizer`
+- **Command:** `node`
+- **Args:** `/absolute/path/to/ui-canon/dist/mcp/index.js`
+
+Or manually add to `.vscode/mcp.json`:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "ui-canonicalizer": {
       "command": "node",
       "args": ["/path/to/ui-canon/dist/mcp/index.js"]
     }
   }
 }
+```
+
+### Claude Code (MCP mode)
+
+A `.mcp.json` in the project root auto-registers the server. Or add manually:
+
+```bash
+claude mcp add ui-canonicalizer -- node /path/to/ui-canon/dist/mcp/index.js
 ```
 
 ### Connecting Stitch MCP (optional)
@@ -234,11 +254,46 @@ Lásd `canonicalizer.config.json` — minden opcionális, van default:
 | `maxFileSizeBytes` | `1000000` | Max fájl méret (1MB) |
 | `verbose` | `false` | Részletes log |
 
-## MCP Server mód (opcionális)
+## IDE Integráció
 
-MCP szerverként is futtatható — az AI közvetlenül küldhet HTML-t elemzésre. Stitch MCP-vel kombinálva: az AI lekéri a screen-eket a Stitch-ből, elemzi, és azonnal használja az eredményt.
+### Bármilyen IDE / terminál (CLI mód)
 
-### Stitch MCP bekötése
+Mindenhol működik — futtasd bármilyen terminálból:
+
+```bash
+node dist/cli/index.js analyze ./html-mappa --out ./out
+```
+
+### VS Code (MCP mód)
+
+Command Palette (`Ctrl+Shift+P`) → **"MCP: Add Server"** → **"Command (stdio)"**:
+
+- **Name:** `ui-canonicalizer`
+- **Command:** `node`
+- **Args:** `/abszolút/útvonal/ui-canon/dist/mcp/index.js`
+
+Vagy kézzel `.vscode/mcp.json`-be:
+
+```json
+{
+  "servers": {
+    "ui-canonicalizer": {
+      "command": "node",
+      "args": ["/path/to/ui-canon/dist/mcp/index.js"]
+    }
+  }
+}
+```
+
+### Claude Code (MCP mód)
+
+A projekt gyökerében lévő `.mcp.json` automatikusan regisztrálja. Vagy kézzel:
+
+```bash
+claude mcp add ui-canonicalizer -- node /path/to/ui-canon/dist/mcp/index.js
+```
+
+## Stitch MCP bekötése (opcionális)
 
 > **Fontos:** A Stitch MCP remote HTTP szerver, ezért **user szinten** (`-s user`) kell hozzáadni. Projekt szintű `.mcp.json`-ből nem működik – Claude Code sémavalidációs hibát dob.
 
