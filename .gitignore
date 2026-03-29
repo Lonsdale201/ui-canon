@@ -7,6 +7,7 @@ test-out/
 .mcp.json
 .claude/
 fixtures/
+stitch-input/
 .env
 *.log
 uzenet*
