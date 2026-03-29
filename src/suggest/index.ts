@@ -21,7 +21,10 @@ export function suggestCanonicalComponents(clusters: PatternCluster[]): Canonica
 
   for (const cluster of clusters) {
     const family = cluster.familyTags[0]?.family || 'component';
-    let baseName = FAMILY_TO_NAME[family] || pascalCase(family);
+
+    // Prefer Stitch comment-derived names over generic FAMILY_TO_NAME
+    const commentName = bestCommentName(cluster);
+    let baseName = commentName || FAMILY_TO_NAME[family] || pascalCase(family);
 
     // Deduplicate names
     let name = baseName;
@@ -86,7 +89,7 @@ function mergeSameFamily(suggestions: CanonicalSuggestion[]): CanonicalSuggestio
     const best = group[0];
 
     // Use the base name (no numeric suffix) from the highest-confidence member
-    const baseName = FAMILY_TO_NAME[best.family] || pascalCase(best.family);
+    const baseName = best.componentName.replace(/\d+$/, '') || FAMILY_TO_NAME[best.family] || pascalCase(best.family);
 
     // Combine foundIn from all members, deduplicated
     const combinedFoundIn = [...new Set(group.flatMap(s => s.foundIn))];
@@ -228,6 +231,70 @@ function findCommonClasses(cluster: PatternCluster): string[] {
   }
 
   return common.sort();
+}
+
+/**
+ * Look at all cluster members' nodes for Stitch HTML comments stored in
+ * `node.meta.comment`. Return the best (longest, most descriptive) one
+ * converted to a PascalCase component name, or `null` if none exists.
+ */
+function bestCommentName(cluster: PatternCluster): string | null {
+  const candidates: string[] = [];
+
+  // Collect comments from representative and all members
+  const nodes = [cluster.representative, ...cluster.members];
+  for (const member of nodes) {
+    const raw = member.node.meta?.comment;
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      candidates.push(raw.trim());
+    }
+  }
+
+  if (candidates.length === 0) return null;
+
+  // Pick the most descriptive comment (longest after stripping parentheticals)
+  let best: string | null = null;
+  let bestLen = 0;
+  for (const c of candidates) {
+    const converted = commentToPascal(c);
+    if (converted && converted.length > bestLen) {
+      best = converted;
+      bestLen = converted.length;
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Convert a Stitch comment string to a valid PascalCase component name.
+ *
+ * - Strip content in parentheses: "SideNavBar (30% Width)" → "SideNavBar"
+ * - Strip leading numbers/special chars
+ * - Convert remaining words to PascalCase
+ * - Return null if result is empty/invalid
+ */
+function commentToPascal(comment: string): string | null {
+  // Strip parenthetical content
+  let cleaned = comment.replace(/\([^)]*\)/g, '').trim();
+
+  // Strip leading numbers and special characters
+  cleaned = cleaned.replace(/^[^a-zA-Z]+/, '');
+
+  if (!cleaned) return null;
+
+  // Split on whitespace, hyphens, underscores and PascalCase-ify
+  const words = cleaned.split(/[-_\s]+/).filter(w => w.length > 0);
+  if (words.length === 0) return null;
+
+  const result = words
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('');
+
+  // Final validation: must start with a letter and be non-empty
+  if (!/^[A-Z]/.test(result)) return null;
+
+  return result;
 }
 
 function pascalCase(str: string): string {

@@ -2,7 +2,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import type {
   PatternCluster, CanonicalSuggestion, DriftIssue,
-  CanonicalOutput, DesignTokensOutput, ReportDocument, AnalysisSummary, ParseResult,
+  CanonicalOutput, DesignTokensOutput, StyleCatalogOutput, ReportDocument, AnalysisSummary, ParseResult,
   LayoutRegionOutput,
 } from '../types/index.js';
 import type { ScreenLayout, LayoutDriftIssue, LayoutRegion } from '../extract/layout.js';
@@ -14,8 +14,9 @@ HOW TO USE THIS FILE:
 2. "canonicalComponents" lists each reusable UI component with its canonical HTML. When building new screens, use these components as-is. Text placeholders (__ACTION_TEXT__, __TEXT__) should be replaced with real content.
 3. "layout" describes each screen's spatial structure (sidebar, header, content regions) with widths and positions. "layout.drift" flags inconsistencies across screens (e.g. sidebar width 30% in one screen but 25% in another).
 4. "screenMap" shows which components each original screen used.
-5. "variants" on a component describe known variations. Pick the closest variant or use the default representative.
-6. Classes use Tailwind CSS with custom colors from designTokens.colors (e.g. "bg-primary" maps to the "primary" color token).
+5. "styleCatalog" lists the exact button, badge, input, and heading styles found across screens with their classes and occurrence counts. Use these exact styles — do not invent new button or badge variants.
+6. "variants" on a component describe known variations. Pick the closest variant or use the default representative.
+7. Classes use Tailwind CSS with custom colors from designTokens.colors (e.g. "bg-primary" maps to the "primary" color token).
 
 IMPORTANT: Maintain visual consistency across all screens. Do not mix styles from different components. Respect the layout structure — sidebar width, header position, content arrangement must be consistent.`;
 
@@ -26,6 +27,7 @@ export function buildCanonicalOutput(
   designTokens: DesignTokensOutput,
   screenLayouts: ScreenLayout[] = [],
   layoutDriftIssues: LayoutDriftIssue[] = [],
+  styleCatalog?: StyleCatalogOutput,
 ): CanonicalOutput {
   const canonicalComponents: CanonicalOutput['canonicalComponents'] = {};
 
@@ -76,6 +78,7 @@ export function buildCanonicalOutput(
       totalComponents: suggestions.length,
     },
     designTokens,
+    styleCatalog: styleCatalog || { buttons: [], badges: [], inputs: [], headings: [] },
     layout: {
       screens: layoutScreens,
       drift: layoutDriftIssues.map(d => ({

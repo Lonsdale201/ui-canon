@@ -159,6 +159,21 @@ export interface CanonicalComponentOutput {
   confidence: number;
 }
 
+export interface StyleEntryOutput {
+  classes: string[];
+  tag: string;
+  occurrences: number;
+  foundIn: string[];
+  sampleText: string;
+}
+
+export interface StyleCatalogOutput {
+  buttons: StyleEntryOutput[];
+  badges: StyleEntryOutput[];
+  inputs: StyleEntryOutput[];
+  headings: StyleEntryOutput[];
+}
+
 export interface NormalizedScreenOutput {
   componentsUsed: string[];
   structure: string[];  // compact outline: e.g. ["SideNav", "TopBar", "section > FormGroup3", "section > DataTable"]
@@ -201,6 +216,7 @@ export interface CanonicalOutput {
     totalComponents: number;
   };
   designTokens: DesignTokensOutput;
+  styleCatalog: StyleCatalogOutput;
   layout: {
     screens: Record<string, ScreenLayoutOutput>;
     drift: LayoutDriftOutput[];

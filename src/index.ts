@@ -6,6 +6,7 @@ export { buildFingerprint, buildStructuralHash, buildClassSignature, serializeFi
 export { extractCandidates } from './extract/index.js';
 export { extractDesignTokens } from './extract/design-tokens.js';
 export { extractScreenLayouts, detectLayoutDrift } from './extract/layout.js';
+export { buildStyleCatalog } from './extract/style-catalog.js';
 export { compareNodes, compareFingerprints } from './match/index.js';
 export { clusterPatterns, selectRepresentative } from './cluster/index.js';
 export { detectDrift } from './drift/index.js';

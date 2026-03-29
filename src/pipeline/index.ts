@@ -8,6 +8,7 @@ import { detectDrift } from '../drift/index.js';
 import { suggestCanonicalComponents } from '../suggest/index.js';
 import { extractDesignTokens } from '../extract/design-tokens.js';
 import { extractScreenLayouts, detectLayoutDrift } from '../extract/layout.js';
+import { buildStyleCatalog } from '../extract/style-catalog.js';
 import { buildCanonicalOutput, buildReport, writeAllOutputs } from '../output/index.js';
 import { countNodes } from '../utils/html.js';
 import { resetIdCounter } from '../utils/ids.js';
@@ -132,7 +133,14 @@ export async function runPipeline(
   const designTokens = extractDesignTokens(rawContents);
   log(`[tokens] Extracted ${Object.keys(designTokens.colors).length} colors, ${Object.keys(designTokens.fontFamily).length} font families`);
 
-  const canonicalOutput = buildCanonicalOutput(clusters, suggestions, normalizedResults, designTokens, screenLayouts, layoutDriftIssues);
+  // Build style catalog from original parse (preserves real class names before normalization sort)
+  const styleCatalogTrees = parseResults
+    .filter(r => r.success && r.root)
+    .map(r => ({ root: r.root!, screenId: r.source.screenId }));
+  const styleCatalog = buildStyleCatalog(styleCatalogTrees);
+  log(`[styles] Catalog: ${styleCatalog.buttons.length} button styles, ${styleCatalog.badges.length} badge styles, ${styleCatalog.inputs.length} input styles, ${styleCatalog.headings.length} heading styles`);
+
+  const canonicalOutput = buildCanonicalOutput(clusters, suggestions, normalizedResults, designTokens, screenLayouts, layoutDriftIssues, styleCatalog);
 
   // Attach extra files if configured
   if (config.attachFiles.length > 0) {
